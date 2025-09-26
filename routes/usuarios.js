@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const db = require('../db');
+const { authenticateToken, requireAdmin } = require('../authMiddleware');
 
 // Obtener todos
 router.get('/', (req, res) => {
@@ -64,5 +65,6 @@ router.get('/:id/permisos', (req, res) => {
         res.json(results[0]);
     });
 });
+
 
 module.exports = router;
