@@ -1,70 +1,73 @@
-const express = require('express');
+const express = require("express");
 const router = express.Router();
-const db = require('../db');
-const { authenticateToken, requireAdmin } = require('../authMiddleware');
+const db = require("../db");
+const bcrypt = require("bcryptjs");
 
-// Obtener todos
-router.get('/', (req, res) => {
-    db.query('SELECT * FROM USuarios', (err, results) => {
-        if (err) return res.status(500).json({ error: err.message });
-        res.json(results);
-    });
-});
-
-//obtener un usuario 
-router.get('/:id', (req, res) => {
-    db.query('SELECT * FROM Usuarios WHERE id_usuario = ?', [req.params.id], (err, results) => {
-        if (err) return res.status(500).json({ error: err.message })
-            res.json(results[0]);
-    });
-});
-
-//Crear usuario
-router.post('/', (req, res) => {
-    const { nombre, correo, contraseña, id_rol } = req.body;
-    db.query('INSERT INTO Usuarios (nombre, correo, contraseña, id_rol) VALUES (?, ?, ?, ?)', 
-        [nombre, correo, contraseña, id_rol], (err, result) => {
-            if (err) return res.status(500).json({ error: err.message });
-            res.json({ id: result.insertId, nombre, correo });
+router.get("/", (req, res) => {
+    const sql = `
+        SELECT u.id_usuario, u.nombre, u.correo, r.id_rol, r.nombre_rol
+        FROM Usuarios u
+        JOIN Roles r ON u.id_rol = r.id_rol
+    `;
+    db.query(sql, (err, rows) => {
+        if (err) {
+            console.error("Error al obtener usuarios:", err);
+            return res.status(500).json({ error: "Error al obtener usuarios" });
         }
-    );
+        res.json(rows)
+    });
 });
 
-// Actualizar Usuario
-router.put('/:id', (req, res) => {
+router.put("/:id", async (req, res) => {
+    const { id } = req.params;
     const { nombre, correo, contraseña, id_rol } = req.body;
-    db.query('UPDATE Usuarios SET nombre=?, correo=?, contraseña=?, id_rol=? WHERE id_usuario=?', 
-        [nombre, correo, contraseña, id_rol, req.params.id], 
-        (err) => {
-            if (err) return res.status(500).json({ error: err.message });
-            res.json({ message: 'Usuario actualizado' });
+
+    if (!nombre || !correo || !id_rol) {
+        return res.status(400).json({ error: "Faltan datos Obligatorios" });
+    }
+
+    try {
+        let sql, params;
+
+        if (contraseña && contraseña.trim() !=="") {
+            const hashedPassword = await bcrypt.hash(contraseña, 10);
+            sql = `
+                UPDATE Usuarios
+                SET nombre = ?, correo = ?, contraseña = ?, id_rol = ? 
+                WHERE id_usuario = ?
+            `;
+            params = [nombre, correo, hashedPassword, id_rol, id];
+        } else {
+            sql = `
+                UPDATE Usuarios
+                SET nombre = ?, correo = ?, id_rol = ?
+                WHERE id_usuario = ?
+            `;
+            params = [nombre, correo, id_rol, id_rol];
         }
-    );
+
+        db.query(sql, params, (err) => {
+            if (err) {
+                console.error("Error al actualizar usuario:", err);
+                return res.status(500).json({ error: "Error al actualizar al usuario" })
+            }
+            res.json({ message: "Usuario actualizado correctamente" });
+        });
+    } catch (err) {
+        console.error("Error al encriptar contraseña:", err);
+        res.status(500).json({ error: "Error al procesar la solicitud" });
+    }
 });
 
-// Eliminar usuario
-router.delete('/:id', (req, res) => {
-    db.delete('DELETE FROM Usuarios WHERE id_usuarios=?', [req.params.id], (err) => {
-        if (err) return res.status(500).json({ error: err.message });
-        res.json({ message: 'Usuario Eliminado' });
+router.delete("/:id", (req, res) => {
+    const { id } = req.params;
+    db.query("DELETE FROM Usuarios WHERE id_usuario = ?", [id], (err) => {
+        if (err) {
+            console.error("Error al eliminar usuario:", err);
+            return res.status(500).json({ error: "Error al eliminar usuario" });
+        }
+        res.json({ message: "Usuario eliminado correctamente" });
     });
 });
-
-// Vista: usuarios con permisos 
-router.get('/vista/permisos', (req, res) => {
-    db.query('SELECT * FROM vista_usuarios_permisos', (err, results) => {
-        if (err) return res.status(500).json({ error: error.message });
-        res.json(results);
-    });
-});
-
-// Permisos de un usuario
-router.get('/:id/permisos', (req, res) => {
-    db.query('CALL obtenerPermisosUsuarios(?)', [req.params.id], (err, results) => {
-        if (err) return res.status(500).json({ error: err.message });
-        res.json(results[0]);
-    });
-});
-
 
 module.exports = router;

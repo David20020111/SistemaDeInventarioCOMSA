@@ -14,6 +14,10 @@ app.use('/categorias', require('./routes/categorias'));
 app.use('/productos', require('./routes/productos'));
 app.use('/movimientos', require('./routes/movimientos'));
 app.use('/', require('./routes/authRoutes'));
+app.use('/dashboard', require('./routes/dashboardRoutes'));
+app.use('inventario', require('./routes/inventario'));
+app.use('/reportes', require('./routes/reportes'))
+
 
 const PORT = 3000;
 app.listen(PORT, () => {

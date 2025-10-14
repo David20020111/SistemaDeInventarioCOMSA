@@ -15,7 +15,7 @@ export default function LoginPage() {
         try {
             const res = await fetch("http://localhost:3000/login", {
                 method: "POST",
-                headers: { "Content-Type": "Aplication/json" },
+                headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ correo, contraseña }),
             });
 
