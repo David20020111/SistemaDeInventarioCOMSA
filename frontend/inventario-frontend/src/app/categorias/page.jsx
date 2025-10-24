@@ -1,162 +1,170 @@
 "use client";
-import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useState, useEffect } from "react";
+
+const COLORS = {
+  primary: "#4e4444ff",
+  secondary: "#F5A623",
+  background: "#000000ff",
+  text: "#FFFFFF"
+}
 
 export default function CategoriasPage() {
-  const router = useRouter();
   const [categorias, setCategorias] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
-  const [showForm, setShowForm] = useState(false);
-  const [form, setForm] = useState({ id: null, nombre: "", descripcion: "" });
+  const [form, setForm] = useState({ id_categoria: null, nombre: "", descripcion: "" });
+  const [modoEditar, setModoEditar] = useState(false);
+  const [mostrarModal, setMostrarModal] = useState(false);
 
-  useEffect(() => {
-    const token = localStorage.getItem("token");
-    if (!token) return router.push("/login");
-    fetchCategorias();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  useEffect(() => { fetchCategorias(); }, []);
 
-  async function fetchCategorias() {
-    setLoading(true);
-    try {
-      const res = await fetch("http://localhost:3000/categorias");
-      if (!res.ok) throw new Error("Error al obtener categorías");
-      const data = await res.json();
-      setCategorias(data);
-    } catch (err) {
-      setError(err.message || "Error");
-    } finally {
-      setLoading(false);
-    }
-  }
+  const fetchCategorias = async () => {
+    const res = await fetch("http://localhost:3000/categorias");
+    const data = await res.json();
+    setCategorias(data);
+  };
 
-  function openCreate() {
-    setForm({ id: null, nombre: "", descripcion: "" });
-    setShowForm(true);
-  }
-
-  function openEdit(c) {
-    setForm({ id: c.id_categoria, nombre: c.nombre, descripcion: c.descripcion || "" });
-    setShowForm(true);
-  }
-
-  function closeForm() {
-    setShowForm(false);
-    setForm({ id: null, nombre: "", descripcion: "" });
-    setError("");
-  }
-
-  async function handleSubmit(e) {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    setError("");
-    if (!form.nombre.trim()) return setError("El nombre es requerido");
+    const url = modoEditar
+      ? `http://localhost:3000/categorias/${form.id_categoria}`
+      : "http://localhost:3000/categorias";
+    const method = modoEditar ? "PUT" : "POST";
 
-    const token = localStorage.getItem("token");
-    const payload = { nombre: form.nombre.trim(), descripcion: form.descripcion };
+    await fetch(url, {
+      method,
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(form),
+    });
+    setForm({ id_categoria: null, nombre: "", descripcion: "" });
+    setModoEditar(false);
+    setMostrarModal(false);
+    fetchCategorias();
+  };
 
-    try {
-      const url = form.id ? `http://localhost:3000/categorias/${form.id}` : "http://localhost:3000/categorias";
-      const method = form.id ? "PUT" : "POST";
+  const handleEdit = (categoria) => {
+    setForm(categoria);
+    setModoEditar(true);
+    setMostrarModal(true);
+  };
 
-      const res = await fetch(url, {
-        method,
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify(payload),
-      });
-
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Error en la operación");
-
-      closeForm();
-      fetchCategorias();
-    } catch (err) {
-      setError(err.message);
-    }
-  }
-
-  async function handleDelete(id) {
-    if (!confirm("¿Eliminar esta categoría?")) return;
-    const token = localStorage.getItem("token");
-    try {
-      const res = await fetch(`http://localhost:3000/categorias/${id}`, {
-        method: "DELETE",
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Error al eliminar");
-      fetchCategorias();
-    } catch (err) {
-      alert(err.message || "Error");
-    }
-  }
+  const handleDelete = async (id) => {
+    if (!confirm("¿Seguro que deseas eliminar esta categoría?")) return;
+    await fetch(`http://localhost:3000/categorias/${id}`, { method: "DELETE" });
+    fetchCategorias();
+  };
 
   return (
-    <div className="p-6">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold">Categorías</h1>
-        <div>
-          <button onClick={() => router.push("/dashboard")} className="mr-2 px-4 py-2 rounded bg-gray-200">Volver</button>
-          <button onClick={openCreate} className="px-4 py-2 rounded bg-blue-600 text-white">Nueva categoría</button>
+   <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-black text-white p-6">
+      {/* LOGO Y ENCABEZADO */}
+      <div className="flex items-center justify-between mb-8">
+        <div className="flex items-center gap-3">
+          <img
+            src="/logoComsa.png"
+            alt="Logo"
+            className="w-35 h-20"
+          />
+          <h1 className="text-3xl font-extrabold text-red-600">
+            📦 Gestión de Categorías
+          </h1>
         </div>
+        <button
+          onClick={() => {
+            setForm({ id_categoria: null, nombre: "", descripcion: "" });
+            setModoEditar(false);
+            setMostrarModal(true);
+          }}
+          className="bg-red-600 hover:bg-red-700 px-4 py-2 rounded-lg font-semibold transition duration-300"
+        >
+          ➕ Nueva Categoría
+        </button>
       </div>
 
-      {loading ? (
-        <p>Cargando...</p>
-      ) : error ? (
-        <p className="text-red-500">{error}</p>
-      ) : (
-        <div className="bg-white shadow rounded">
-          <table className="min-w-full table-auto">
-            <thead>
-              <tr className="bg-gray-50">
-                <th className="px-4 py-3 text-left">ID</th>
-                <th className="px-4 py-3 text-left">Nombre</th>
-                <th className="px-4 py-3 text-left">Descripción</th>
-                <th className="px-4 py-3 text-left">Acciones</th>
+      {/* TABLA DE CATEGORÍAS */}
+      <div className="overflow-x-auto bg-gray-900 rounded-lg shadow-lg">
+        <table className="w-full text-left border-collapse">
+          <thead className="bg-gray-800 text-gray-300">
+            <tr>
+              <th className="p-3">ID</th>
+              <th className="p-3">Nombre</th>
+              <th className="p-3">Descripción</th>
+              <th className="p-3">Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            {categorias.map((c) => (
+              <tr
+                key={c.id_categoria}
+                className="border-t border-gray-700 hover:bg-gray-800 transition"
+              >
+                <td className="p-3">{c.id_categoria}</td>
+                <td className="p-3">{c.nombre}</td>
+                <td className="p-3">{c.descripcion}</td>
+                <td className="p-3 space-x-2">
+                  <button
+                    onClick={() => handleEdit(c)}
+                    className="bg-yellow-500 text-black px-3 py-1 rounded-lg hover:bg-yellow-400 font-semibold"
+                  >
+                    ✏️ Editar
+                  </button>
+                  <button
+                    onClick={() => handleDelete(c.id_categoria)}
+                    className="bg-red-700 hover:bg-red-800 px-3 py-1 rounded-lg font-semibold"
+                  >
+                    🗑️ Eliminar
+                  </button>
+                </td>
               </tr>
-            </thead>
-            <tbody>
-              {categorias.map((c) => (
-                <tr key={c.id_categoria} className="border-t">
-                  <td className="px-4 py-3">{c.id_categoria}</td>
-                  <td className="px-4 py-3">{c.nombre}</td>
-                  <td className="px-4 py-3">{c.descripcion || "-"}</td>
-                  <td className="px-4 py-3">
-                    <button onClick={() => openEdit(c)} className="mr-2 px-3 py-1 bg-yellow-300 rounded">Editar</button>
-                    <button onClick={() => handleDelete(c.id_categoria)} className="px-3 py-1 bg-red-500 text-white rounded">Eliminar</button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      )}
+            ))}
+          </tbody>
+        </table>
 
-      {/* Modal / Form */}
-      {showForm && (
-        <div className="fixed inset-0 bg-black/40 flex items-center justify-center">
-          <div className="bg-white rounded-lg p-6 w-full max-w-md">
-            <h2 className="text-xl font-bold mb-4">{form.id ? "Editar categoría" : "Crear categoría"}</h2>
+        {categorias.length === 0 && (
+          <p className="text-center text-gray-400 p-4">
+            No hay categorías registradas
+          </p>
+        )}
+      </div>
 
-            {error && <p className="text-red-500 mb-2">{error}</p>}
+      {/* MODAL (AlertDialog) */}
+      {mostrarModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50">
+          <div className="bg-gray-900 p-6 rounded-2xl shadow-2xl w-full max-w-md border border-red-600">
+            <h2 className="text-2xl font-bold text-center mb-4 text-red-500">
+              {modoEditar ? "Editar Categoría" : "Agregar Categoría"}
+            </h2>
 
-            <form onSubmit={handleSubmit}>
-              <div className="mb-3">
-                <label className="block text-sm mb-1">Nombre</label>
-                <input className="w-full px-3 py-2 border rounded" value={form.nombre} onChange={(e) => setForm({...form, nombre: e.target.value})} />
-              </div>
-              <div className="mb-3">
-                <label className="block text-sm mb-1">Descripción</label>
-                <textarea className="w-full px-3 py-2 border rounded" value={form.descripcion} onChange={(e) => setForm({...form, descripcion: e.target.value})} />
-              </div>
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <input
+                value={form.nombre}
+                onChange={(e) => setForm({ ...form, nombre: e.target.value })}
+                placeholder="Nombre"
+                className="w-full p-2 bg-gray-800 border border-gray-700 rounded-lg focus:ring-2 focus:ring-red-500"
+                required
+              />
+              <textarea
+                value={form.descripcion}
+                onChange={(e) => setForm({ ...form, descripcion: e.target.value })}
+                placeholder="Descripción"
+                className="w-full p-2 bg-gray-800 border border-gray-700 rounded-lg focus:ring-2 focus:ring-red-500"
+              />
 
-              <div className="flex justify-end space-x-2">
-                <button type="button" onClick={closeForm} className="px-4 py-2 rounded border">Cancelar</button>
-                <button type="submit" className="px-4 py-2 rounded bg-blue-600 text-white">{form.id ? "Guardar" : "Crear"}</button>
+              <div className="flex justify-between mt-4">
+                <button
+                  type="button"
+                  onClick={() => setMostrarModal(false)}
+                  className="bg-gray-700 hover:bg-gray-600 px-4 py-2 rounded-lg font-semibold"
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="submit"
+                  className={`px-4 py-2 rounded-lg font-semibold ${
+                    modoEditar
+                      ? "bg-yellow-500 hover:bg-yellow-400 text-black"
+                      : "bg-red-600 hover:bg-red-700 text-white"
+                  }`}
+                >
+                  {modoEditar ? "Actualizar" : "Guardar"}
+                </button>
               </div>
             </form>
           </div>

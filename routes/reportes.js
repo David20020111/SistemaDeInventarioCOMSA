@@ -32,6 +32,8 @@ router.get("/inventario", (req, res) => {
     query += " AND p.stock_actual >= p.stock_minimo";
   }
 
+  query += "ORDER BY p.nombre ASC"
+
   db.query(query, params, (err, results) => {
     if (err) {
       console.error("Error ejecutando reporte inventario: ", err);

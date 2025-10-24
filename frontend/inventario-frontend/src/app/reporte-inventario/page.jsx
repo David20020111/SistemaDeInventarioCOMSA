@@ -4,6 +4,8 @@ import { useRouter } from "next/navigation";
 
 export default function ReporteInventarioPage() {
   const [productos, setProductos] = useState([]);
+  const [categorias, setCategorias] = useState([]);
+  const [nombres, setNombres] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filtros, setFiltros] = useState({
     categoria: "",
@@ -13,8 +15,12 @@ export default function ReporteInventarioPage() {
   const router = useRouter();
 
   useEffect(() => {
-    fetchReporte();
+    fetchDatos();
   }, []);
+
+  async function fetchDatos() {
+    await Promise.all([fetchReporte(), fetchCategorias(), fetchNombres()]);
+  }
 
   async function fetchReporte() {
     setLoading(true);
@@ -37,6 +43,26 @@ export default function ReporteInventarioPage() {
     }
   }
 
+  async function fetchCategorias() {
+    try {
+      const res = await fetch("http://localhost:3000/categorias");
+      const data = await res.json();
+      setCategorias(data);
+    } catch (err) {
+      console.error("Error cargando las categorias:", err);
+    }
+  }
+
+  async function fetchNombres() {
+    try {
+      const res = await fetch("http://localhost:3000/productos");
+      const data = await res.json();
+      setNombres(data);
+    } catch (err) {
+      console.error("Error cargando nombres de productos", err);
+    }
+  }
+
   function handleChange(e) {
     setFiltros({ ...filtros, [e.target.name]: e.target.value });
   }
@@ -52,105 +78,164 @@ export default function ReporteInventarioPage() {
   }
 
   return (
-    <div className="p-6">
-      <h2 className="text-2xl font-bold text-gray-800 mb-4">
-        📊 Reporte de Inventario
-      </h2>
+    <div
+      className="min-h-screen p-6"
+      style={{
+        background: `linear-gradient(to bottom, ${COLORS.backgroundTop}, ${COLORS.backgroundBottom})`,
+      }}
+    >
+      {/* Encabezado con logo y título */}
+      <div className="flex items-center justify-between mb-8">
+        <div className="flex items-center space-x-3">
+          <img src="/logoComsa.png" alt="Logo" className="w-36 h-20" />
+          <h1
+            className="text-3xl font-bold"
+            style={{ color: COLORS.primary }}
+          >
+            📊 Reporte de Inventario
+          </h1>
+        </div>
 
-      {/* Botones navegación */}
-      <div className="flex gap-4 mb-4">
         <button
           onClick={() => router.push("/dashboard")}
-          className="px-4 py-2 bg-gray-700 text-white rounded"
+          className="px-4 py-2 rounded text-white font-semibold shadow-lg hover:opacity-90 transition"
+          style={{ background: COLORS.primary }}
         >
           ⬅️ Volver al Dashboard
-        </button>
-
-        <button
-          onClick={resetFiltros}
-          className="px-4 py-2 bg-green-600 text-white rounded"
-        >
-          🔄 Ver Todo
         </button>
       </div>
 
       {/* Filtros */}
-      <form
-        onSubmit={handleFilter}
-        className="mb-4 bg-white shadow p-4 rounded flex gap-4 flex-wrap"
+      <div className="rounded-xl shadow-lg p-6 mb-6"
+        style={{
+          backgroundColor: COLORS.tableBody,
+          color: COLORS.text,
+        }}
       >
-        <input
-          type="text"
-          name="nombre"
-          placeholder="Buscar producto..."
-          value={filtros.nombre}
-          onChange={handleChange}
-          className="border px-3 py-2 rounded"
-        />
-
-        <input
-          type="text"
-          name="categoria"
-          placeholder="Categoría"
-          value={filtros.categoria}
-          onChange={handleChange}
-          className="border px-3 py-2 rounded"
-        />
-
-        <select
-          name="stock"
-          value={filtros.stock}
-          onChange={handleChange}
-          className="border px-3 py-2 rounded"
+        <h2
+          className="text-lg font-semibold mb-4"
+          style={{ color: COLORS.primary }}
         >
-          <option value="">-- Stock --</option>
-          <option value="bajo">Bajo</option>
-          <option value="normal">Normal</option>
-        </select>
+          🔍 Filtros de búsqueda
+        </h2>
 
-        <button
-          type="submit"
-          className="px-4 py-2 bg-blue-600 text-white rounded"
+        <form
+                    onSubmit={handleFilter}
+          className="flex flex-wrap gap-4 items-center"
         >
-          Filtrar
-        </button>
-      </form>
+          {/* Filtro por nombre (select dinámico) */}
+          <select
+            name="nombre"
+            value={filtros.nombre}
+            onChange={handleChange}
+            className="border border-gray-600 bg-gray-800 text-white p-2 rounded flex-1 focus:outline-none focus:ring-2 focus:ring-red-600"
+          >
+            <option value="">-- Seleccionar producto --</option>
+            {nombres.map((p) => (
+              <option key={p.id_producto} value={p.nombre}>
+                {p.nombre}
+              </option>
+            ))}
+          </select>
 
-      {loading ? (
-        <p className="text-gray-500">Cargando...</p>
-      ) : productos.length === 0 ? (
-        <p className="text-red-600">No hay productos en el inventario.</p>
-      ) : (
-        <div className="overflow-x-auto">
-          <table className="w-full border-collapse bg-white shadow-md rounded-lg overflow-hidden">
-            <thead className="bg-indigo-600 text-white">
+          {/* Filtro por categoría (select dinámico) */}
+          <select
+            name="categoria"
+            value={filtros.categoria}
+            onChange={handleChange}
+            className="border border-gray-600 bg-gray-800 text-white p-2 rounded flex-1 focus:outline-none focus:ring-2 focus:ring-red-600"
+          >
+            <option value="">-- Seleccionar categoría --</option>
+            {categorias.map((c) => (
+              <option key={c.id_categoria} value={c.nombre}>
+                {c.nombre}
+              </option>
+            ))}
+          </select>
+
+          {/* Filtro por stock */}
+          <select
+            name="stock"
+            value={filtros.stock}
+            onChange={handleChange}
+            className="border border-gray-600 bg-gray-800 text-white p-2 rounded"
+          >
+            <option value="">-- Stock --</option>
+            <option value="bajo">Bajo</option>
+            <option value="normal">Normal</option>
+          </select>
+
+          {/* Botones */}
+          <button
+            type="submit"
+            className="px-4 py-2 rounded text-white font-semibold shadow-md hover:opacity-90 transition"
+            style={{ background: COLORS.primary }}
+          >
+            Filtrar
+          </button>
+
+          <button
+            type="button"
+            onClick={resetFiltros}
+            className="px-4 py-2 rounded text-white font-semibold shadow-md hover:opacity-90 transition"
+            style={{ background: "#555555" }}
+          >
+            🔄 Ver Todo
+          </button>
+        </form>
+      </div>
+
+      {/* Tabla de resultados */}
+      <div
+        className="rounded-xl shadow-lg overflow-hidden"
+        style={{ backgroundColor: COLORS.tableBody }}
+      >
+        {loading ? (
+          <p className="text-center p-6 text-gray-400">Cargando datos...</p>
+        ) : productos.length === 0 ? (
+          <p className="text-center p-6 text-gray-400">
+            No hay productos en el inventario.
+          </p>
+        ) : (
+          <table className="w-full border-collapse">
+            <thead style={{ backgroundColor: COLORS.tableHeader }}>
               <tr>
-                <th className="px-4 py-2 text-left">Código</th>
-                <th className="px-4 py-2 text-left">Producto</th>
-                <th className="px-4 py-2 text-left">Categoría</th>
-                <th className="px-4 py-2 text-left">Stock Actual</th>
-                <th className="px-4 py-2 text-left">Stock Mínimo</th>
-                <th className="px-4 py-2 text-left">Ubicación</th>
+                <th className="p-3 text-left text-white">Código</th>
+                <th className="p-3 text-left text-white">Producto</th>
+                <th className="p-3 text-left text-white">Categoría</th>
+                <th className="p-3 text-left text-white">Stock Actual</th>
+                <th className="p-3 text-left text-white">Stock Mínimo</th>
+                <th className="p-3 text-left text-white">Ubicación</th>
               </tr>
             </thead>
             <tbody>
               {productos.map((p, idx) => (
                 <tr
                   key={idx}
-                  className="border-t hover:bg-gray-100 transition"
+                  className="hover:bg-gray-800 transition"
+                  style={{ color: COLORS.text }}
                 >
-                  <td className="px-4 py-2">{p.codigo}</td>
-                  <td className="px-4 py-2">{p.nombre}</td>
-                  <td className="px-4 py-2">{p.categoria}</td>
-                  <td className="px-4 py-2">{p.stock_actual}</td>
-                  <td className="px-4 py-2">{p.stock_minimo}</td>
-                  <td className="px-4 py-2">{p.ubicacion}</td>
+                  <td className="p-3 border-t border-gray-700">{p.codigo}</td>
+                  <td className="p-3 border-t border-gray-700">{p.nombre}</td>
+                  <td className="p-3 border-t border-gray-700">{p.categoria}</td>
+                  <td className="p-3 border-t border-gray-700">{p.stock_actual}</td>
+                  <td className="p-3 border-t border-gray-700">{p.stock_minimo}</td>
+                  <td className="p-3 border-t border-gray-700">{p.ubicacion}</td>
                 </tr>
               ))}
             </tbody>
           </table>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   );
+}
+
+const COLORS = {
+  backgroundTop: "#1c1c1c",
+  backgroundBottom: "#4f4f4f",
+  tableHeader: "#424242",
+  tableBody: "#000000",
+  text: "#ffffff",
+  primary: "#d32f2f",
 }

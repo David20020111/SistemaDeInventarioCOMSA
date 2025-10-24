@@ -1,322 +1,248 @@
 "use client";
-import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useState, useEffect } from "react";
 
 export default function ProductosPage() {
-  const router = useRouter();
   const [productos, setProductos] = useState([]);
   const [categorias, setCategorias] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
-  const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState({
-    id: null,
+    id_producto: null,
     codigo: "",
     nombre: "",
     id_categoria: "",
-    stock_actual: 0,
-    stock_minimo: 0,
+    stock_actual: "",
+    stock_minimo: "",
     ubicacion: "",
   });
+  const [modoEditar, setModoEditar] = useState(false);
+  const [modalVisible, setModalVisible] = useState(false);
 
+  // --- Cargar productos y categorías al iniciar ---
   useEffect(() => {
-    const token = localStorage.getItem("token");
-    if (!token) return router.push("/login");
     fetchProductos();
     fetchCategorias();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  async function fetchProductos() {
-    setLoading(true);
-    try {
-      const res = await fetch("http://localhost:3000/productos");
-      if (!res.ok) throw new Error("Error al obtener productos");
-      const data = await res.json();
-      setProductos(data);
-    } catch (err) {
-      setError(err.message || "Error");
-    } finally {
-      setLoading(false);
-    }
-  }
+  const fetchProductos = async () => {
+    const res = await fetch("http://localhost:3000/productos");
+    const data = await res.json();
+    setProductos(data);
+  };
 
-  async function fetchCategorias() {
-    try {
-      const res = await fetch("http://localhost:3000/categorias");
-      if (!res.ok) throw new Error("Error al obtener categorías");
-      const data = await res.json();
-      setCategorias(data);
-    } catch (err) {
-      console.error(err);
-    }
-  }
+  const fetchCategorias = async () => {
+    const res = await fetch("http://localhost:3000/categorias");
+    const data = await res.json();
+    setCategorias(data);
+  };
 
-  function openCreate() {
-    setForm({
-      id: null,
-      codigo: "",
-      nombre: "",
-      id_categoria: "",
-      stock_actual: 0,
-      stock_minimo: 0,
-      ubicacion: "",
-    });
-    setShowForm(true);
-  }
-
-  function openEdit(p) {
-    setForm({
-      id: p.id_producto,
-      codigo: p.codigo,
-      nombre: p.nombre,
-      id_categoria: p.id_categoria,
-      stock_actual: p.stock_actual,
-      stock_minimo: p.stock_minimo,
-      ubicacion: p.ubicacion || "",
-    });
-    setShowForm(true);
-  }
-
-  function closeForm() {
-    setShowForm(false);
-    setForm({
-      id: null,
-      codigo: "",
-      nombre: "",
-      id_categoria: "",
-      stock_actual: 0,
-      stock_minimo: 0,
-      ubicacion: "",
-    });
-    setError("");
-  }
-
-  async function handleSubmit(e) {
+  // --- Guardar o actualizar producto ---
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    setError("");
-    if (!form.nombre.trim() || !form.codigo.trim()) {
-      return setError("El código y nombre son requeridos");
-    }
+    const url = modoEditar
+      ? `http://localhost:3000/productos/${form.id_producto}`
+      : "http://localhost:3000/productos";
+    const method = modoEditar ? "PUT" : "POST";
 
-    const token = localStorage.getItem("token");
-    const payload = {
-      codigo: form.codigo.trim(),
-      nombre: form.nombre.trim(),
-      id_categoria: form.id_categoria,
-      stock_actual: form.stock_actual,
-      stock_minimo: form.stock_minimo,
-      ubicacion: form.ubicacion,
-    };
+    await fetch(url, {
+      method,
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(form),
+    });
 
-    try {
-      const url = form.id
-        ? `http://localhost:3000/productos/${form.id}`
-        : "http://localhost:3000/productos";
-      const method = form.id ? "PUT" : "POST";
+    setModalVisible(false);
+    setForm({
+      id_producto: null,
+      codigo: "",
+      nombre: "",
+      id_categoria: "",
+      stock_actual: "",
+      stock_minimo: "",
+      ubicacion: "",
+    });
+    setModoEditar(false);
+    fetchProductos();
+  };
 
-      const res = await fetch(url, {
-        method,
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify(payload),
-      });
+  // --- Abrir modal en modo agregar ---
+  const openAddModal = () => {
+    setModoEditar(false);
+    setForm({
+      id_producto: null,
+      codigo: "",
+      nombre: "",
+      id_categoria: "",
+      stock_actual: "",
+      stock_minimo: "",
+      ubicacion: "",
+    });
+    setModalVisible(true);
+  };
 
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Error en la operación");
+  // --- Abrir modal en modo editar ---
+  const handleEdit = (producto) => {
+    setModoEditar(true);
+    setForm(producto);
+    setModalVisible(true);
+  };
 
-      closeForm();
-      fetchProductos();
-    } catch (err) {
-      setError(err.message);
-    }
-  }
-
-  async function handleDelete(id) {
-    if (!confirm("¿Eliminar este producto?")) return;
-    const token = localStorage.getItem("token");
-    try {
-      const res = await fetch(`http://localhost:3000/productos/${id}`, {
-        method: "DELETE",
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Error al eliminar");
-      fetchProductos();
-    } catch (err) {
-      alert(err.message || "Error");
-    }
-  }
+  // --- Eliminar producto ---
+  const handleDelete = async (id) => {
+    if (!confirm("¿Seguro que deseas eliminar este producto?")) return;
+    await fetch(`http://localhost:3000/productos/${id}`, { method: "DELETE" });
+    fetchProductos();
+  };
 
   return (
-    <div className="p-6">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold">🔩 Materiales</h1>
-        <div>
-          <button
-            onClick={() => router.push("/dashboard")}
-            className="mr-2 px-4 py-2 rounded bg-gray-200"
-          >
-            Volver
-          </button>
-          <button
-            onClick={openCreate}
-            className="px-4 py-2 rounded bg-blue-600 text-white"
-          >
-            Nuevo producto
-          </button>
+    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-black text-white p-6">
+      {/* LOGO Y TÍTULO */}
+      <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center gap-3">
+          <img
+            src="/logoComsa.png"
+            alt="Logo"
+            className="w-35 h-20"
+          />
+          <h1 className="text-3xl font-extrabold text-red-600">
+            🧰Gestión de Productos
+          </h1>
         </div>
+        <button
+          onClick={openAddModal}
+          className="bg-red-600 hover:bg-red-700 px-4 py-2 rounded-lg font-semibold transition duration-300"
+        >
+          ➕ Agregar Producto
+        </button>
       </div>
 
-      {loading ? (
-        <p>Cargando...</p>
-      ) : error ? (
-        <p className="text-red-500">{error}</p>
-      ) : (
-        <div className="bg-white shadow rounded overflow-x-auto">
-          <table className="min-w-full table-auto">
-            <thead>
-              <tr className="bg-gray-50">
-                <th className="px-4 py-3 text-left">ID</th>
-                <th className="px-4 py-3 text-left">Código</th>
-                <th className="px-4 py-3 text-left">Nombre</th>
-                <th className="px-4 py-3 text-left">Categoría</th>
-                <th className="px-4 py-3 text-left">Stock actual</th>
-                <th className="px-4 py-3 text-left">Stock mínimo</th>
-                <th className="px-4 py-3 text-left">Ubicación</th>
-                <th className="px-4 py-3 text-left">Acciones</th>
+      {/* TABLA DE PRODUCTOS */}
+      <div className="overflow-x-auto bg-gray-900 rounded-lg shadow-lg">
+        <table className="w-full text-left border-collapse">
+          <thead className="bg-gray-800 text-gray-300">
+            <tr>
+              <th className="p-3">Código</th>
+              <th className="p-3">Nombre</th>
+              <th className="p-3">Categoría</th>
+              <th className="p-3">Stock</th>
+              <th className="p-3">Ubicación</th>
+              <th className="p-3">Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            {productos.map((p) => (
+              <tr
+                key={p.id_producto}
+                className="border-t border-gray-700 hover:bg-gray-800 transition"
+              >
+                <td className="p-3">{p.codigo}</td>
+                <td className="p-3">{p.nombre}</td>
+                <td className="p-3">{p.categoria}</td>
+                <td className="p-3">
+                  {p.stock_actual}{" "}
+                  <span className="text-gray-400">/ {p.stock_minimo}</span>
+                </td>
+                <td className="p-3">{p.ubicacion}</td>
+                <td className="p-3 space-x-2">
+                  <button
+                    onClick={() => handleEdit(p)}
+                    className="bg-yellow-500 text-black px-3 py-1 rounded-lg hover:bg-yellow-400 font-semibold"
+                  >
+                    ✏️ Editar
+                  </button>
+                  <button
+                    onClick={() => handleDelete(p.id_producto)}
+                    className="bg-red-700 hover:bg-red-800 px-3 py-1 rounded-lg font-semibold"
+                  >
+                    🗑️ Eliminar
+                  </button>
+                </td>
               </tr>
-            </thead>
-            <tbody>
-              {productos.map((p) => (
-                <tr key={p.id_producto} className="border-t">
-                  <td className="px-4 py-3">{p.id_producto}</td>
-                  <td className="px-4 py-3">{p.codigo}</td>
-                  <td className="px-4 py-3">{p.nombre}</td>
-                  <td className="px-4 py-3">
-                    {categorias.find((c) => c.id_categoria === p.id_categoria)?.nombre || "-"}
-                  </td>
-                  <td className="px-4 py-3">{p.stock_actual}</td>
-                  <td className="px-4 py-3">{p.stock_minimo}</td>
-                  <td className="px-4 py-3">{p.ubicacion || "-"}</td>
-                  <td className="px-4 py-3">
-                    <button
-                      onClick={() => openEdit(p)}
-                      className="mr-2 px-3 py-1 bg-yellow-300 rounded"
-                    >
-                      Editar
-                    </button>
-                    <button
-                      onClick={() => handleDelete(p.id_producto)}
-                      className="px-3 py-1 bg-red-500 text-white rounded"
-                    >
-                      Eliminar
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      )}
+            ))}
+          </tbody>
+        </table>
+      </div>
 
-      {/* Modal / Form */}
-      {showForm && (
-        <div className="fixed inset-0 bg-black/40 flex items-center justify-center">
-          <div className="bg-white rounded-lg p-6 w-full max-w-md">
-            <h2 className="text-xl font-bold mb-4">
-              {form.id ? "Editar producto" : "Crear producto"}
+      {/* MODAL (AlertDialog) */}
+      {modalVisible && (
+        <div className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50">
+          <div className="bg-gray-900 p-6 rounded-2xl shadow-2xl w-full max-w-md border border-red-600">
+            <h2 className="text-2xl font-bold text-center mb-4 text-red-500">
+              {modoEditar ? "Editar Producto" : "Agregar Producto"}
             </h2>
 
-            {error && <p className="text-red-500 mb-2">{error}</p>}
+            <form onSubmit={handleSubmit} className="space-y-3">
+              <input
+                value={form.codigo}
+                onChange={(e) => setForm({ ...form, codigo: e.target.value })}
+                placeholder="Código"
+                className="w-full p-2 bg-gray-800 border border-gray-700 rounded-lg focus:ring-2 focus:ring-red-500"
+              />
+              <input
+                value={form.nombre}
+                onChange={(e) => setForm({ ...form, nombre: e.target.value })}
+                placeholder="Nombre del producto"
+                className="w-full p-2 bg-gray-800 border border-gray-700 rounded-lg focus:ring-2 focus:ring-red-500"
+              />
+              <select
+                value={form.id_categoria}
+                onChange={(e) =>
+                  setForm({ ...form, id_categoria: e.target.value })
+                }
+                className="w-full p-2 bg-gray-800 border border-gray-700 rounded-lg"
+              >
+                <option value="">-- Selecciona categoría --</option>
+                {categorias.map((cat) => (
+                  <option key={cat.id_categoria} value={cat.id_categoria}>
+                    {cat.nombre}
+                  </option>
+                ))}
+              </select>
 
-            <form onSubmit={handleSubmit}>
-              <div className="mb-3">
-                <label className="block text-sm mb-1">Código</label>
-                <input
-                  className="w-full px-3 py-2 border rounded"
-                  value={form.codigo}
-                  onChange={(e) => setForm({ ...form, codigo: e.target.value })}
-                />
-              </div>
-
-              <div className="mb-3">
-                <label className="block text-sm mb-1">Nombre</label>
-                <input
-                  className="w-full px-3 py-2 border rounded"
-                  value={form.nombre}
-                  onChange={(e) => setForm({ ...form, nombre: e.target.value })}
-                />
-              </div>
-
-              <div className="mb-3">
-                <label className="block text-sm mb-1">Categoría</label>
-                <select
-                  className="w-full px-3 py-2 border rounded"
-                  value={form.id_categoria}
-                  onChange={(e) =>
-                    setForm({ ...form, id_categoria: e.target.value })
-                  }
-                >
-                  <option value="">Seleccione...</option>
-                  {categorias.map((c) => (
-                    <option key={c.id_categoria} value={c.id_categoria}>
-                      {c.nombre}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div className="mb-3">
-                <label className="block text-sm mb-1">Stock actual</label>
+              <div className="grid grid-cols-2 gap-2">
                 <input
                   type="number"
-                  className="w-full px-3 py-2 border rounded"
                   value={form.stock_actual}
                   onChange={(e) =>
-                    setForm({ ...form, stock_actual: Number(e.target.value) })
+                    setForm({ ...form, stock_actual: e.target.value })
                   }
+                  placeholder="Stock actual"
+                  className="p-2 bg-gray-800 border border-gray-700 rounded-lg focus:ring-2 focus:ring-red-500"
                 />
-              </div>
-
-              <div className="mb-3">
-                <label className="block text-sm mb-1">Stock mínimo</label>
                 <input
                   type="number"
-                  className="w-full px-3 py-2 border rounded"
                   value={form.stock_minimo}
                   onChange={(e) =>
-                    setForm({ ...form, stock_minimo: Number(e.target.value) })
+                    setForm({ ...form, stock_minimo: e.target.value })
                   }
+                  placeholder="Stock mínimo"
+                  className="p-2 bg-gray-800 border border-gray-700 rounded-lg focus:ring-2 focus:ring-red-500"
                 />
               </div>
 
-              <div className="mb-3">
-                <label className="block text-sm mb-1">Ubicación</label>
-                <input
-                  className="w-full px-3 py-2 border rounded"
-                  value={form.ubicacion}
-                  onChange={(e) =>
-                    setForm({ ...form, ubicacion: e.target.value })
-                  }
-                />
-              </div>
+              <input
+                value={form.ubicacion}
+                onChange={(e) =>
+                  setForm({ ...form, ubicacion: e.target.value })
+                }
+                placeholder="Ubicación"
+                className="w-full p-2 bg-gray-800 border border-gray-700 rounded-lg focus:ring-2 focus:ring-red-500"
+              />
 
-              <div className="flex justify-end space-x-2">
+              <div className="flex justify-between mt-4">
                 <button
                   type="button"
-                  onClick={closeForm}
-                  className="px-4 py-2 rounded border"
+                  onClick={() => setModalVisible(false)}
+                  className="bg-gray-700 hover:bg-gray-600 px-4 py-2 rounded-lg font-semibold"
                 >
                   Cancelar
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 rounded bg-blue-600 text-white"
+                  className={`px-4 py-2 rounded-lg font-semibold ${
+                    modoEditar
+                      ? "bg-yellow-500 hover:bg-yellow-400 text-black"
+                      : "bg-red-600 hover:bg-red-700 text-white"
+                  }`}
                 >
-                  {form.id ? "Guardar" : "Crear"}
+                  {modoEditar ? "Actualizar" : "Guardar"}
                 </button>
               </div>
             </form>
