@@ -1,9 +1,13 @@
 const express = require('express');
 const cors = require('cors');
-const app = express();
 require ('dotenv').config();
 
-app.use(cors());
+const app = express();
+
+app.use(cors({
+    origin: '*'
+}))
+
 app.use(express.json());
 
 //rutas
@@ -15,12 +19,12 @@ app.use('/productos', require('./routes/productos'));
 app.use('/movimientos', require('./routes/movimientos'));
 app.use('/', require('./routes/authRoutes'));
 app.use('/dashboard', require('./routes/dashboardRoutes'));
-app.use('inventario', require('./routes/inventario'));
+app.use('/inventario', require('./routes/inventario'));
 app.use('/reportes', require('./routes/reportes'))
 
 
-const PORT = 3000;
+const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
-    console.log(`Servidor corriendo en http://localhost:${PORT}`);
-});
+    console.log(`🚀 servidor corriendo en http://localhost:${PORT}`)
+})
 
