@@ -101,7 +101,7 @@ export default function ReporteInventarioPage() {
           className="px-4 py-2 rounded text-white font-semibold shadow-lg hover:opacity-90 transition"
           style={{ background: COLORS.primary }}
         >
-          ⬅️ Volver al Dashboard
+          🏠​ Volver al inicio
         </button>
       </div>
 
@@ -171,7 +171,7 @@ export default function ReporteInventarioPage() {
             className="px-4 py-2 rounded text-white font-semibold shadow-md hover:opacity-90 transition"
             style={{ background: COLORS.primary }}
           >
-            Filtrar
+            🖇️ Filtrar
           </button>
 
           <button

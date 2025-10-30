@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 export default function MovimientosPage() {
   const [movimientos, setMovimientos] = useState([]);
   const [productos, setProductos] = useState([]);
+  const [usuarios, setUsuarios] = useState([]);
   const [form, setForm] = useState({
     id_producto: "",
     tipo: "entrada",
@@ -13,6 +14,7 @@ export default function MovimientosPage() {
     id_usuario: 1, // 👈 de momento quemado, luego se toma del login
   });
   const [error, setError] = useState("");
+  const [alerta, setAlerta] = useState(null);
 
   const [filtroProducto, setFiltroProducto] = useState("");
   const [filtroUsuario, setFiltroUsuario] = useState("");
@@ -24,6 +26,7 @@ export default function MovimientosPage() {
   useEffect(() => {
     fetchMovimientos();
     fetchProductos();
+    fetchUsuarios();
   }, []);
 
   async function fetchMovimientos() {
@@ -52,6 +55,12 @@ export default function MovimientosPage() {
     }
   }
 
+  async function fetchUsuarios() {
+    const res = await fetch("http://localhost:3000/usuarios");
+    const data = await res.json();
+    setUsuarios(data);
+  }
+
   async function handleSubmit(e) {
     e.preventDefault();
     setError("");
@@ -70,6 +79,8 @@ export default function MovimientosPage() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Error al registrar movimiento");
 
+      setAlerta("Movimiento registrado correctamente");
+
       setForm({
         id_producto: "",
         tipo: "entrada",
@@ -78,6 +89,8 @@ export default function MovimientosPage() {
         id_usuario: 1,
       });
       fetchMovimientos();
+
+      setTimeout(() => setAlerta(null), 2500);
     } catch (err) {
       setError(err.message);
     }
@@ -93,34 +106,53 @@ export default function MovimientosPage() {
   }
 
   return (
-    <div className="p-6">
-      <h1 className="text-2xl font-bold mb-4">Registro de Movimientos</h1>
+    <div
+      className="min-h-screen p-6"
+      style={{
+        background: `linear-gradient(to bottom, ${COLORS.backgroundTop}, ${COLORS.backgroundBotton})`,
+        color: COLORS.text,
+      }}
+    >
+      {/* Header */}
+      <div className="flex items-center justify-between mb-8">
+        <div className="flex items-center space-x-3">
+          <img src="/logoComsa.png" alt="Logo" className="w-36 h-20" />
+          <h1 className="text-3xl font-bold" style={{ color: COLORS.primary }}>
+            ⚙️ Registro de Movimientos
+          </h1>
+        </div>
 
-      {/* Botones navegación */}
-      <div className="flex gap-4 mb-4">
         <button
           onClick={() => router.push("/dashboard")}
-          className="px-4 py-2 bg-gray-700 text-white rounded"
+          className="px-4 py-2 rounded text-white font-semibold shadow-lg hover:opacity-90 transition"
+          style={{ background: COLORS.primary }}
         >
-          ⬅️ Volver al Dashboard
-        </button>
-
-        <button
-          onClick={resetFiltros}
-          className="px-4 py-2 bg-green-600 text-white rounded"
-        >
-          🔄 Ver Todo
+          🏠​ Volver al inicio
         </button>
       </div>
 
       {/* Formulario */}
-      <form onSubmit={handleSubmit} className="bg-white shadow p-4 rounded mb-6">
-        {error && <p className="text-red-500 mb-2">{error}</p>}
+      <div
+        className="p-6 rounded-xl shadow-lg mb-6"
+        style={{ backgroundColor: COLORS.tableBody }}
+      >
+        <h2
+          className="text-lg font-semibold mb-4"
+          style={{ color: COLORS.primary }}
+        >
+          ➕ Registrar Movimiento
+        </h2>
 
-        <div className="mb-3">
-          <label className="block mb-1">Producto</label>
+        {error && <p className="text-red-500 mb-3">{error}</p>}
+        {alerta && (
+          <div className="bg-green-600 text-white p-3 rounded mb-3 text-center font-semibold">
+            {alerta}
+          </div>
+        )}
+
+        <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <select
-            className="w-full border px-3 py-2 rounded"
+            className="border border-gray-600 bg-gray-800 text-white p-2 rounded"
             value={form.id_producto}
             onChange={(e) => setForm({ ...form, id_producto: e.target.value })}
           >
@@ -131,116 +163,167 @@ export default function MovimientosPage() {
               </option>
             ))}
           </select>
-        </div>
 
-        <div className="mb-3">
-          <label className="block mb-1">Tipo</label>
           <select
-            className="w-full border px-3 py-2 rounded"
+            className="border border-gray-600 bg-gray-800 text-white p-2 rounded"
             value={form.tipo}
             onChange={(e) => setForm({ ...form, tipo: e.target.value })}
           >
             <option value="entrada">Entrada</option>
             <option value="salida">Salida</option>
           </select>
-        </div>
 
-        <div className="mb-3">
-          <label className="block mb-1">Cantidad</label>
           <input
             type="number"
-            className="w-full border px-3 py-2 rounded"
+            placeholder="Cantidad"
+            className="border border-gray-600 bg-gray-800 text-white p-2 rounded"
             value={form.cantidad}
             onChange={(e) => setForm({ ...form, cantidad: e.target.value })}
           />
-        </div>
 
-        <div className="mb-3">
-          <label className="block mb-1">Detalle</label>
           <input
             type="text"
-            className="w-full border px-3 py-2 rounded"
+            placeholder="Detalle"
+            className="md:col-span-2 border border-gray-600 bg-gray-800 text-white p-2 rounded"
             value={form.detalle}
             onChange={(e) => setForm({ ...form, detalle: e.target.value })}
           />
-        </div>
 
-        <button
-          type="submit"
-          className="px-4 py-2 bg-blue-600 text-white rounded"
-        >
-          Registrar
-        </button>
-      </form>
+          <button
+            type="submit"
+            className="px-4 py-2 rounded text-white font-semibold shadow-md hover:opacity-90 transition"
+            style={{ background: COLORS.primary }}
+          >
+            💾​ Guardar Movimiento
+          </button>
+        </form>
+      </div>
 
       {/* Filtros */}
-      <div className="mb-4 flex gap-4 flex-wrap bg-gray-100 p-3 rounded">
-        <input
-          type="text"
-          placeholder="Buscar producto"
-          className="border p-2 rounded"
-          value={filtroProducto}
-          onChange={(e) => setFiltroProducto(e.target.value)}
-        />
-        <input
-          type="text"
-          placeholder="Buscar usuario"
-          className="border p-2 rounded"
-          value={filtroUsuario}
-          onChange={(e) => setFiltroUsuario(e.target.value)}
-        />
-        <input
-          type="date"
-          className="border p-2 rounded"
-          value={fechaInicio}
-          onChange={(e) => setFechaInicio(e.target.value)}
-        />
-        <input
-          type="date"
-          className="border p-2 rounded"
-          value={fechaFin}
-          onChange={(e) => setFechaFin(e.target.value)}
-        />
-        <button
-          onClick={fetchMovimientos}
-          className="bg-blue-500 text-white px-4 py-2 rounded"
+      <div
+        className="p-6 rounded-xl shadow-lg mb-6"
+        style={{ backgroundColor: COLORS.tableBody }}
+      >
+        <h2
+          className="text-lg font-semibold mb-4"
+          style={{ color: COLORS.primary }}
         >
-          Filtrar
-        </button>
+          🔍 Filtros de búsqueda
+        </h2>
+
+        <div className="flex flex-wrap gap-4">
+          <select
+            className="border border-gray-600 bg-gray-800 text-white p-2 rounded"
+            value={filtroProducto}
+            onChange={(e) => setFiltroProducto(e.target.value)}
+          >
+            <option value="">-- Producto --</option>
+            {productos.map((p) => (
+              <option key={p.id_producto} value={p.nombre}>
+                {p.nombre}
+              </option>
+            ))}
+          </select>
+
+          <select
+            className="border border-gray-600 bg-gray-800 text-white p-2 rounded"
+            value={filtroUsuario}
+            onChange={(e) => setFiltroUsuario(e.target.value)}
+          >
+            <option value="">-- Usuario --</option>
+            {usuarios.map((u) => (
+              <option key={u.id_usuario} value={u.nombre}>
+                {u.nombre}
+              </option>
+            ))}
+          </select>
+
+          <input
+            type="date"
+            className="border border-gray-600 bg-gray-800 text-white p-2 rounded"
+            value={fechaInicio}
+            onChange={(e) => setFechaInicio(e.target.value)}
+          />
+          <input
+            type="date"
+            className="border border-gray-600 bg-gray-800 text-white p-2 rounded"
+            value={fechaFin}
+            onChange={(e) => setFechaFin(e.target.value)}
+          />
+
+          <button
+            onClick={fetchMovimientos}
+            className="px-4 py-2 rounded text-white font-semibold shadow-md hover:opacity-90 transition"
+            style={{ background: COLORS.primary }}
+          >
+            🖇️ Filtrar
+          </button>
+
+          <button
+            onClick={resetFiltros}
+            className="px-4 py-2 rounded text-white font-semibold shadow-md hover:opacity-90 transition"
+            style={{ background: "#555555" }}
+          >
+            🔄 Ver todos los movimientos
+          </button>
+        </div>
       </div>
 
       {/* Tabla */}
-      <div className="bg-white shadow rounded p-4">
-        <h2 className="text-xl font-bold mb-3">Historial de Movimientos</h2>
-        <table className="min-w-full table-auto">
-          <thead>
-            <tr className="bg-gray-50">
-              <th className="px-4 py-2 text-left">ID</th>
-              <th className="px-4 py-2 text-left">Producto</th>
-              <th className="px-4 py-2 text-left">Tipo</th>
-              <th className="px-4 py-2 text-left">Cantidad</th>
-              <th className="px-4 py-2 text-left">Detalle</th>
-              <th className="px-4 py-2 text-left">Usuario</th>
-              <th className="px-4 py-2 text-left">Fecha</th>
+      <div
+        className="rounded-xl shadow-lg overflow-hidden"
+        style={{ backgroundColor: COLORS.tableBody }}
+      >
+        <table className="w-full border-collapse">
+          <thead style={{ backgroundColor: COLORS.tableHeader }}>
+            <tr>
+              <th className="p-3 text-left text-white">ID</th>
+              <th className="p-3 text-left text-white">Producto</th>
+              <th className="p-3 text-left text-white">Tipo</th>
+              <th className="p-3 text-left text-white">Cantidad</th>
+              <th className="p-3 text-left text-white">Detalle</th>
+              <th className="p-3 text-left text-white">Usuario</th>
+              <th className="p-3 text-left text-white">Fecha</th>
             </tr>
           </thead>
           <tbody>
-            {movimientos.map((m) => (
-              <tr key={m.id_movimiento} className="border-t">
-                <td className="px-4 py-2">{m.id_movimiento}</td>
-                <td className="px-4 py-2">{m.producto}</td>
-                <td className="px-4 py-2">{m.tipo}</td>
-                <td className="px-4 py-2">{m.cantidad}</td>
-                <td className="px-4 py-2">{m.detalle}</td>
-                <td className="px-4 py-2">{m.usuario}</td>
-                <td className="px-4 py-2">
-                  {new Date(m.fecha).toLocaleString()}
+            {movimientos.length === 0 ? (
+              <tr>
+                <td colSpan="7" className="text-center p-4 text-gray-400">
+                  No hay movimientos registrados.
                 </td>
               </tr>
-            ))}
+            ) : (
+              movimientos.map((m) => (
+                <tr
+                  key={m.id_movimiento}
+                  className="hover:bg-gray-800 transition"
+                  style={{ color: COLORS.text }}
+                >
+                  <td className="p-3 border-t border-gray-700">{m.id_movimiento}</td>
+                  <td className="p-3 border-t border-gray-700">{m.producto}</td>
+                  <td className="p-3 border-t border-gray-700">{m.tipo}</td>
+                  <td className="p-3 border-t border-gray-700">{m.cantidad}</td>
+                  <td className="p-3 border-t border-gray-700">{m.detalle}</td>
+                  <td className="p-3 border-t border-gray-700">{m.usuario}</td>
+                  <td className="p-3 border-t border-gray-700">
+                    {new Date(m.fecha).toLocaleString()}
+                  </td>
+                </tr>
+              ))
+            )}
           </tbody>
         </table>
       </div>
     </div>
   );
+}
+
+const COLORS = {
+  backgroundTop: "#1c1c1c",
+  backgroundBotton: "#2b2b2b",
+  primary: "#c0392b",
+  tableHeader: "#3d3d3d",
+  tableBody: "#141414",
+  text: "#ffffff",
 }

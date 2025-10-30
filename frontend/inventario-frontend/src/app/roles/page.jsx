@@ -1,7 +1,9 @@
 "use client";
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 
 export default function RolesPage() {
+  const router = useRouter();
   const [roles, setRoles] = useState([]);
   const [nuevoRol, setNuevoRol] = useState("");
 
@@ -38,65 +40,128 @@ export default function RolesPage() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-gray-100 flex flex-col items-center py-10 px-4">
-      <div className="w-full max-w-3xl bg-white shadow-lg rounded-2xl p-8">
-        <h1 className="text-2xl font-bold text-gray-800 mb-6 text-center">
-          📌 Gestión de Roles
-        </h1>
+<div
+      className="min-h-screen p-6"
+      style={{
+        background: `linear-gradient(to bottom, ${COLORS.backgroundTop}, ${COLORS.backgroundBottom})`,
+      }}
+    >
+      {/* 🔺 Encabezado con logo y título */}
+      <div className="flex items-center justify-between mb-8">
+        <div className="flex items-center space-x-3">
+          <img src="/logoComsa.png" alt="Logo" className="w-36 h-20" />
+          <h1 className="text-3xl font-bold" style={{ color: COLORS.primary }}>
+            🧩 Gestión de Roles
+          </h1>
+        </div>
 
-        {/* Formulario */}
-        <div className="flex gap-3 mb-6">
+        <button
+          onClick={() => router.push("/dashboard")}
+          className="px-4 py-2 rounded text-white font-semibold shadow-lg hover:opacity-90 transition"
+          style={{ background: COLORS.primary }}
+        >
+          🏠 Volver al Inicio
+        </button>
+      </div>
+
+      {/* 🧾 Formulario para agregar rol */}
+      <div
+        className="rounded-xl shadow-lg p-6 mb-6"
+        style={{
+          backgroundColor: COLORS.tableBody,
+          color: COLORS.text,
+        }}
+      >
+        <h2
+          className="text-lg font-semibold mb-4"
+          style={{ color: COLORS.primary }}
+        >
+          ➕ Agregar nuevo rol
+        </h2>
+
+        <div className="flex flex-wrap gap-4 items-center">
           <input
             type="text"
-            placeholder="Nuevo rol"
+            placeholder="Nombre del rol"
             value={nuevoRol}
             onChange={(e) => setNuevoRol(e.target.value)}
-            className="flex-1 px-4 py-2 border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="flex-1 border border-gray-600 bg-gray-800 text-white p-2 rounded focus:outline-none focus:ring-2 focus:ring-red-600"
           />
           <button
             onClick={crearRol}
-            className="bg-blue-600 text-white px-5 py-2 rounded-lg shadow hover:bg-blue-700 transition"
+            className="px-4 py-2 rounded text-white font-semibold shadow-md hover:opacity-90 transition"
+            style={{ background: COLORS.primary }}
           >
-            Agregar
+            Agregar Rol
           </button>
         </div>
+      </div>
 
-        {/* Tabla de roles */}
-        <div className="overflow-x-auto">
-          <table className="w-full border border-gray-200 rounded-lg">
-            <thead className="bg-gray-200">
-              <tr>
-                <th className="px-4 py-2 text-left text-gray-700 font-semibold">ID</th>
-                <th className="px-4 py-2 text-left text-gray-700 font-semibold">Nombre del Rol</th>
-                <th className="px-4 py-2 text-center text-gray-700 font-semibold">Acciones</th>
-              </tr>
-            </thead>
-            <tbody>
-              {roles.map((rol) => (
-                <tr key={rol.id_rol} className="border-t hover:bg-gray-50">
-                  <td className="px-4 py-2">{rol.id_rol}</td>
-                  <td className="px-4 py-2">{rol.nombre_rol}</td>
-                  <td className="px-4 py-2 text-center">
+      {/* 📋 Tabla de roles */}
+      <div
+        className="rounded-xl shadow-lg overflow-hidden"
+        style={{ backgroundColor: COLORS.tableBody }}
+      >
+        <h3
+          className="text-lg font-bold mb-4 p-4"
+          style={{ color: COLORS.primary }}
+        >
+          📄 Lista de Roles Registrados
+        </h3>
+
+        <table className="w-full border-collapse">
+          <thead style={{ backgroundColor: COLORS.tableHeader }}>
+            <tr>
+              <th className="p-3 text-left text-white">ID</th>
+              <th className="p-3 text-left text-white">Nombre del Rol</th>
+              <th className="p-3 text-left text-white">Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            {roles.length > 0 ? (
+              roles.map((rol) => (
+                <tr
+                  key={rol.id_rol}
+                  className="hover:bg-gray-800 transition"
+                  style={{ color: COLORS.text }}
+                >
+                  <td className="p-3 border-t border-gray-700">{rol.id_rol}</td>
+                  <td className="p-3 border-t border-gray-700">
+                    {rol.nombre_rol}
+                  </td>
+                  <td className="p-3 border-t border-gray-700">
                     <button
                       onClick={() => eliminarRol(rol.id_rol)}
-                      className="bg-red-500 text-white px-4 py-1 rounded-lg shadow hover:bg-red-600 transition"
+                      className="px-3 py-1 rounded font-semibold text-white shadow "
+                      style={{ background: COLORS.primary }}
                     >
-                      ❌ Eliminar
+                      🗑️ Eliminar
                     </button>
                   </td>
                 </tr>
-              ))}
-              {roles.length === 0 && (
-                <tr>
-                  <td colSpan="3" className="text-center py-4 text-gray-500">
-                    No hay roles registrados
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
+              ))
+            ) : (
+              <tr>
+                <td
+                  colSpan="3"
+                  className="text-center py-6 text-gray-400 border-t border-gray-700"
+                >
+                  No hay roles registrados
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </table>
       </div>
     </div>
   );
+}
+
+const COLORS = {
+  primary: "#e50914",
+  backgroundTop: "#2b2b2b",
+  backgroundBottom: "#000000",
+  tableHeader: "#3a3a3a",
+  tableBody: "#1e1e1e",
+  text: "#ffffff",
 }
