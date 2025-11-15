@@ -51,7 +51,7 @@ export default function RolesPage() {
         <div className="flex items-center space-x-3">
           <img src="/logoComsa.png" alt="Logo" className="w-36 h-20" />
           <h1 className="text-3xl font-bold" style={{ color: COLORS.primary }}>
-            🧩 Gestión de Roles
+            🔑 Gestión de Roles
           </h1>
         </div>
 
