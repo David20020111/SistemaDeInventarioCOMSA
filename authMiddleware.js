@@ -1,5 +1,5 @@
 const jwt = require('jsonwebtoken');
-const db = require('../API prueba/db');
+const db = require('./db');
 const JWT_SECRET = process.env.JWT_SECRET || 'mi_super_secreto';
 
 
