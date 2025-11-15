@@ -13,7 +13,7 @@ router.post("/", (req, res) => {
 
   // 1. Insertar en Movimientos con detalle
   db.query(
-    "INSERT INTO Movimientos (id_producto, tipo, cantidad, detalle, fecha, id_usuario) VALUES (?, ?, ?, ?, NOW(), ?)",
+    "INSERT INTO movimientos (id_producto, tipo, cantidad, detalle, fecha, id_usuario) VALUES (?, ?, ?, ?, NOW(), ?)",
     [id_producto, tipo, cantidad, detalle || null, id_usuario],
     (err, result) => {
       if (err) {
@@ -45,9 +45,9 @@ router.get("/", (req, res) => {
   let sql = `
     SELECT m.id_movimiento, p.nombre AS producto, m.tipo, m.cantidad, m.detalle,
            m.fecha, u.nombre AS usuario
-    FROM Movimientos m
-    JOIN Productos p ON m.id_producto = p.id_producto
-    JOIN Usuarios u ON m.id_usuario = u.id_usuario
+    FROM movimientos m
+    JOIN productos p ON m.id_producto = p.id_producto
+    JOIN usuarios u ON m.id_usuario = u.id_usuario
     WHERE 1=1
   `;
   const params = [];

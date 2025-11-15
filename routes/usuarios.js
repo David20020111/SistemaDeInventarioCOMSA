@@ -6,8 +6,8 @@ const bcrypt = require("bcryptjs");
 router.get("/", (req, res) => {
     const sql = `
         SELECT u.id_usuario, u.nombre, u.correo, r.id_rol, r.nombre_rol
-        FROM Usuarios u
-        JOIN Roles r ON u.id_rol = r.id_rol
+        FROM usuarios u
+        JOIN roles r ON u.id_rol = r.id_rol
     `;
     db.query(sql, (err, rows) => {
         if (err) {
@@ -32,14 +32,14 @@ router.put("/:id", async (req, res) => {
         if (contraseña && contraseña.trim() !=="") {
             const hashedPassword = await bcrypt.hash(contraseña, 10);
             sql = `
-                UPDATE Usuarios
+                UPDATE usuarios
                 SET nombre = ?, correo = ?, contraseña = ?, id_rol = ? 
                 WHERE id_usuario = ?
             `;
             params = [nombre, correo, hashedPassword, id_rol, id];
         } else {
             sql = `
-                UPDATE Usuarios
+                UPDATE usuarios
                 SET nombre = ?, correo = ?, id_rol = ?
                 WHERE id_usuario = ?
             `;
@@ -61,7 +61,7 @@ router.put("/:id", async (req, res) => {
 
 router.delete("/:id", (req, res) => {
     const { id } = req.params;
-    db.query("DELETE FROM Usuarios WHERE id_usuario = ?", [id], (err) => {
+    db.query("DELETE FROM usuarios WHERE id_usuario = ?", [id], (err) => {
         if (err) {
             console.error("Error al eliminar usuario:", err);
             return res.status(500).json({ error: "Error al eliminar usuario" });

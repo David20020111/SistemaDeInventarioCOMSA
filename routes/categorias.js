@@ -4,7 +4,7 @@ const db = require('../db');
 
 // Listar todas las categorías
 router.get('/', (req, res) => {
-  db.query('SELECT * FROM Categorias ORDER BY nombre ASC', (err, results) => {
+  db.query('SELECT * FROM categorias ORDER BY nombre ASC', (err, results) => {
     if (err) return res.status(500).json({ error: err.message });
     res.json(results);
   });
@@ -16,7 +16,7 @@ router.post('/', (req, res) => {
   if (!nombre) return res.status(400).json({ error: 'El nombre es obligatorio' });
 
   db.query(
-    'INSERT INTO Categorias (nombre, descripcion) VALUES (?, ?)',
+    'INSERT INTO categorias (nombre, descripcion) VALUES (?, ?)',
     [nombre, descripcion],
     (err, result) => {
       if (err) return res.status(500).json({ error: err.message });
@@ -31,7 +31,7 @@ router.put('/:id', (req, res) => {
   const { nombre, descripcion } = req.body;
 
   db.query(
-    'UPDATE Categorias SET nombre = ?, descripcion = ? WHERE id_categoria = ?',
+    'UPDATE categorias SET nombre = ?, descripcion = ? WHERE id_categoria = ?',
     [nombre, descripcion, id],
     (err) => {
       if (err) return res.status(500).json({ error: err.message });
@@ -43,7 +43,7 @@ router.put('/:id', (req, res) => {
 // Eliminar categoría
 router.delete('/:id', (req, res) => {
   const { id } = req.params;
-  db.query('DELETE FROM Categorias WHERE id_categoria = ?', [id], (err) => {
+  db.query('DELETE FROM categorias WHERE id_categoria = ?', [id], (err) => {
     if (err) return res.status(500).json({ error: err.message });
     res.json({ message: 'Categoría eliminada correctamente' });
   });

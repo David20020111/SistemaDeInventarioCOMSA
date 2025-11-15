@@ -24,7 +24,7 @@ router.post('/register', async (req, res) => {
     const rol = id_rol || 2;
 
     db.query(
-      'INSERT INTO Usuarios (nombre, correo, contraseña, id_rol) VALUES (?, ?, ?, ?)',
+      'INSERT INTO usuarios (nombre, correo, contraseña, id_rol) VALUES (?, ?, ?, ?)',
       [nombre, correo, hashedPassword, rol],
       (err, result) => {
         if (err) {
@@ -48,7 +48,7 @@ router.post('/login', (req, res) => {
     return res.status(400).json({ error: 'Correo y contraseña son requeridos' });
   } 
 
-  db.query('SELECT * FROM Usuarios WHERE correo = ?', [correo], async (err, results) =>{
+  db.query('SELECT * FROM usuarios WHERE correo = ?', [correo], async (err, results) =>{
     if (err) {
       console.error(err);
       return res.status(500).json({ error: 'Error en la base de datos' });

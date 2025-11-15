@@ -10,8 +10,8 @@ router.get("/inventario", (req, res) => {
   let query = `
     SELECT p.codigo, p.nombre, c.nombre AS categoria, 
            p.stock_actual, p.stock_minimo, p.ubicacion
-    FROM Productos p
-    JOIN Categorias c ON p.id_categoria = c.id_categoria
+    FROM productos p
+    JOIN categorias c ON p.id_categoria = c.id_categoria
     WHERE 1=1
   `;
   const params = [];
@@ -32,7 +32,7 @@ router.get("/inventario", (req, res) => {
     query += " AND p.stock_actual >= p.stock_minimo";
   }
 
-  query += "ORDER BY p.nombre ASC"
+  query += " ORDER BY p.nombre ASC"
 
   db.query(query, params, (err, results) => {
     if (err) {

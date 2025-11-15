@@ -4,7 +4,7 @@ const db = require("../db");
 
 // 📌 Obtener todos los roles
 router.get("/", (req, res) => {
-    db.query("SELECT * FROM Roles", (err, results) => {
+    db.query("SELECT * FROM roles", (err, results) => {
         if (err) return res.status(500).json({ error: err.message });
         res.json(results);
     });
@@ -17,7 +17,7 @@ router.post("/", (req, res) => {
         return res.status(400).json({ error: "El nombre del rol es obligatorio" });
     }
 
-    db.query("INSERT INTO Roles (nombre_rol) VALUES (?)", [nombre_rol], (err, result) => {
+    db.query("INSERT INTO roles (nombre_rol) VALUES (?)", [nombre_rol], (err, result) => {
         if (err) return res.status(500).json({ error: err.message });
         res.json({ message: "Rol creado correctamente", id: result.insertId });
     });
@@ -26,7 +26,7 @@ router.post("/", (req, res) => {
 // 📌 Eliminar un rol
 router.delete("/:id", (req, res) => {
     const { id } = req.params;
-    db.query("DELETE FROM Roles WHERE id_rol = ?", [id], (err, result) => {
+    db.query("DELETE FROM roles WHERE id_rol = ?", [id], (err, result) => {
         if (err) return res.status(500).json({ error: err.message });
         if (result.affectedRows === 0) {
             return res.status(404).json({ error: "Rol no encontrado" });

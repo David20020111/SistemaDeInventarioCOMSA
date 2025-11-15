@@ -7,8 +7,8 @@ router.get('/', (req, res) => {
   const sql = `
     SELECT p.id_producto, p.codigo, p.nombre, c.nombre AS categoria, 
            p.stock_actual, p.stock_minimo, p.ubicacion
-    FROM Productos p
-    JOIN Categorias c ON p.id_categoria = c.id_categoria
+    FROM productos p
+    JOIN categorias c ON p.id_categoria = c.id_categoria
     ORDER BY p.nombre ASC
   `;
   db.query(sql, (err, results) => {
@@ -24,7 +24,7 @@ router.post('/', (req, res) => {
     return res.status(400).json({ error: 'Faltan campos obligatorios' });
 
   db.query(
-    `INSERT INTO Productos (codigo, nombre, id_categoria, stock_actual, stock_minimo, ubicacion)
+    `INSERT INTO productos (codigo, nombre, id_categoria, stock_actual, stock_minimo, ubicacion)
      VALUES (?, ?, ?, ?, ?, ?)`,
     [codigo, nombre, id_categoria, stock_actual || 0, stock_minimo || 0, ubicacion || ''],
     (err) => {
@@ -40,7 +40,7 @@ router.put("/:id", (req, res) => {
   const { codigo, nombre, id_categoria, stock_actual, stock_minimo, ubicacion } = req.body;
 
   const sql = `
-    UPDATE Productos 
+    UPDATE productos 
     SET codigo=?, nombre=?, id_categoria=?, stock_actual=?, stock_minimo=?, ubicacion=?
     WHERE id_producto=?
   `;
@@ -57,7 +57,7 @@ router.put("/:id", (req, res) => {
 // Eliminar producto
 router.delete('/:id', (req, res) => {
   const { id } = req.params;
-  db.query('DELETE FROM Productos WHERE id_producto = ?', [id], (err) => {
+  db.query('DELETE FROM productos WHERE id_producto = ?', [id], (err) => {
     if (err) return res.status(500).json({ error: err.message });
     res.json({ message: 'Producto eliminado correctamente' });
   });

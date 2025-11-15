@@ -1,18 +1,20 @@
 const mysql = require('mysql2');
+require('dotenv').config();
 
 const db = mysql.createConnection({
-    host: 'localhost', 
-    port:'3306',
-    user: 'root',
-    password: 'Root123',
-    database: 'inventario_empresa_comsa2',
+    host: process.env.DB_HOST || 'metro.proxy.rlwy.net', 
+    port: process.env.DB_PORT || '35505',
+    user: process.env.DB_USER || 'root',
+    password: process.env.DB_PASSWORD || 'ABfJQBCJvkqYMYRBbYmzXgISgZxYiZYn',
+    database: process.env.DB_NAME || 'railway',
+    multipleStatements: true
 });
 
-db.connect(err => {
+db.connect((err) => {
     if (err) {
-        console.error('Error de conexion:', err);
+        console.error('❌ Error de conexión a MySQL:', err);
     } else {
-        console.log('conectando a MySQL - inventario_empresa_comsa2');
+        console.log('✅ Conectado a MySQL:', process.env.DB_NAME || 'inventario_empresa_comsa2');
     }
 });
 

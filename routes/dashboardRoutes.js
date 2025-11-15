@@ -5,12 +5,12 @@ const db = require('../db');
 // Endpoint para obtener estadísticas
 router.get("/stats", (req, res) => {
   const queries = {
-    categorias: "SELECT COUNT(*) AS total FROM Categorias",
-    productos: "SELECT COUNT(*) AS total FROM Productos",
-    movimientos: "SELECT COUNT(*) AS total FROM Movimientos",
-    usuarios: "SELECT COUNT(*) AS total FROM Usuarios",
-    roles: "SELECT COUNT(*) AS total FROM Roles",
-    permisos: "SELECT COUNT(*) AS total FROM Permisos",
+    categorias: "SELECT COUNT(*) AS total FROM categorias",
+    productos: "SELECT COUNT(*) AS total FROM productos",
+    movimientos: "SELECT COUNT(*) AS total FROM movimientos",
+    usuarios: "SELECT COUNT(*) AS total FROM usuarios",
+    roles: "SELECT COUNT(*) AS total FROM roles",
+    permisos: "SELECT COUNT(*) AS total FROM permisos",
   };
 
   const results = {};

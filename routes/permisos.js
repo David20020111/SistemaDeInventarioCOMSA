@@ -5,7 +5,7 @@ const db = require("../db"); // tu pool/connection mysql2
 
 // GET /permisos - lista todos los módulos (permisos)
 router.get("/", (req, res) => {
-  db.query("SELECT id_permiso, nombre_modulo FROM Permisos ORDER BY id_permiso", (err, rows) => {
+  db.query("SELECT id_permiso, nombre_modulo FROM permisos ORDER BY id_permiso", (err, rows) => {
     if (err) {
       console.error("Error al obtener permisos:", err);
       return res.status(500).json({ error: "Error al obtener permisos" });
@@ -23,8 +23,8 @@ router.get("/rol/:id_rol", (req, res) => {
            IFNULL(rp.puede_crear, 0) AS puede_crear,
            IFNULL(rp.puede_editar, 0) AS puede_editar,
            IFNULL(rp.puede_eliminar, 0) AS puede_eliminar
-    FROM Permisos p
-    LEFT JOIN Roles_Permisos rp ON p.id_permiso = rp.id_permiso AND rp.id_rol = ?
+    FROM permisos p
+    LEFT JOIN roles_permisos rp ON p.id_permiso = rp.id_permiso AND rp.id_rol = ?
     ORDER BY p.id_permiso
   `;
   db.query(sql, [id_rol], (err, rows) => {
@@ -44,7 +44,7 @@ router.post("/asignar", (req, res) => {
   }
 
   const sql = `
-    INSERT INTO Roles_Permisos (id_rol, id_permiso, puede_ver, puede_crear, puede_editar, puede_eliminar)
+    INSERT INTO roles_permisos (id_rol, id_permiso, puede_ver, puede_crear, puede_editar, puede_eliminar)
     VALUES (?, ?, ?, ?, ?, ?)
     ON DUPLICATE KEY UPDATE
       puede_ver = VALUES(puede_ver),
@@ -73,7 +73,7 @@ router.post("/asignar", (req, res) => {
 // DELETE /permisos/rol/:id_rol/permiso/:id_permiso - quitar asignación
 router.delete("/rol/:id_rol/permiso/:id_permiso", (req, res) => {
   const { id_rol, id_permiso } = req.params;
-  db.query("DELETE FROM Roles_Permisos WHERE id_rol = ? AND id_permiso = ?", [id_rol, id_permiso], (err) => {
+  db.query("DELETE FROM roles_permisos WHERE id_rol = ? AND id_permiso = ?", [id_rol, id_permiso], (err) => {
     if (err) {
       console.error("Error al eliminar permiso del rol:", err);
       return res.status(500).json({ error: "Error al eliminar permiso del rol" });
