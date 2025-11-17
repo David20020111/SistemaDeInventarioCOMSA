@@ -1,4 +1,4 @@
-const db = require("../API prueba/db")
+const db = require("./db")
 
 const validarPermiso = (modulo, accion) => {
     return (req, res, next) => {
