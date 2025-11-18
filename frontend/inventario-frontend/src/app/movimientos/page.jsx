@@ -23,6 +23,8 @@ export default function MovimientosPage() {
 
   const router = useRouter();
 
+  const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://inventariocomsa.onrender.com";
+
   useEffect(() => {
     fetchMovimientos();
     fetchProductos();
@@ -31,7 +33,7 @@ export default function MovimientosPage() {
 
   async function fetchMovimientos() {
     try {
-      let url = "http://localhost:3000/movimientos?";
+      let url = `${API_URL}/movimientos?`;
       if (filtroProducto) url += `producto=${filtroProducto}&`;
       if (filtroUsuario) url += `usuario=${filtroUsuario}&`;
       if (fechaInicio && fechaFin)
@@ -47,7 +49,7 @@ export default function MovimientosPage() {
 
   async function fetchProductos() {
     try {
-      const res = await fetch("http://localhost:3000/productos");
+      const res = await fetch(`${API_URL}/productos`);
       const data = await res.json();
       setProductos(data);
     } catch (err) {
@@ -56,9 +58,13 @@ export default function MovimientosPage() {
   }
 
   async function fetchUsuarios() {
-    const res = await fetch("http://localhost:3000/usuarios");
-    const data = await res.json();
-    setUsuarios(data);
+    try {
+      const res = await fetch(`${API_URL}/usuarios`);
+      const data = await res.json();
+      setUsuarios(data);
+    } catch (err) {
+      console.error(err);
+    }
   }
 
   async function handleSubmit(e) {
@@ -70,7 +76,7 @@ export default function MovimientosPage() {
     }
 
     try {
-      const res = await fetch("http://localhost:3000/movimientos", {
+      const res = await fetch(`${API_URL}/movimientos`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(form),

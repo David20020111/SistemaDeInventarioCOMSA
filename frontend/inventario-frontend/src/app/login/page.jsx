@@ -8,12 +8,14 @@ export default function LoginPage() {
     const [error, setError] = useState("");
     const router = useRouter();
 
+    const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://inventariocomsa.onrender.com";
+
     const handleLogin = async (e) => {
         e.preventDefault();
         setError("");
 
         try {
-            const res = await fetch("http://localhost:3000/login", {
+            const res = await fetch(`${API_URL}/login`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ correo, contraseña }),

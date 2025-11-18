@@ -16,26 +16,34 @@ export default function UsuarioPage() {
     const [modoEditar, setModoEditar] = useState(false);
     const [showDialog, setShowDialog] = useState(false);
 
+    const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://inventariocomsa.onrender.com";
+
     useEffect(() => {
         fetchUsuarios();
         fetchRoles();
     }, []);
 
     async function fetchUsuarios() {
-        const res = await fetch("http://localhost:3000/usuarios");
+        const res = await fetch(`${API_URL}/usuarios`);
         const data = await res.json();
         setUsuarios(data);
     }
 
     async function fetchRoles() {
-        const res = await fetch("http://localhost:3000/roles");
+        const res = await fetch(`${API_URL}/roles`);
         const data = await res.json();
         setRoles(data);
     }
 
     async function handleSubmit(e) {
         e.preventDefault();
-        const url = `http://localhost:3000/usuarios/${form.id_usuario}`;
+
+        if (!form.id_usuario) {
+          alert("Error: No se selecciono usuario para editar.");
+          return;
+        }
+
+        const url = `${API_URL}/usuarios${form.id_usuario}`;
 
         const res = await fetch(url, {
             method: "PUT", 
@@ -45,6 +53,7 @@ export default function UsuarioPage() {
 
         const data = await res.json();
         alert(data.message || data.error);
+        
         setForm({ id_usuario: null, nombre: "", correo: "", contraseña: "", id_rol: ""});
         setModoEditar(false);
         setShowDialog(false);
@@ -53,7 +62,7 @@ export default function UsuarioPage() {
 
     async function handleDelete(id) {
         if (!confirm("¿Seguro que quieres eliminar este usuario?")) return;
-        const res = await fetch(`http://localhost:3000/usuarios/${id}`, {
+        const res = await fetch(`${API_URL}/usuarios/${id}`, {
             method: "DELETE",
         });
         const data = await res.json();

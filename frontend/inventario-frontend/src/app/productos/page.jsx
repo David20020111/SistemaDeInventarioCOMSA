@@ -16,6 +16,8 @@ export default function ProductosPage() {
   const [modoEditar, setModoEditar] = useState(false);
   const [modalVisible, setModalVisible] = useState(false);
 
+  const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://inventariocomsa.onrender.com";
+
   // --- Cargar productos y categorías al iniciar ---
   useEffect(() => {
     fetchProductos();
@@ -23,13 +25,13 @@ export default function ProductosPage() {
   }, []);
 
   const fetchProductos = async () => {
-    const res = await fetch("http://localhost:3000/productos");
+    const res = await fetch(`${API_URL}/productos`);
     const data = await res.json();
     setProductos(data);
   };
 
   const fetchCategorias = async () => {
-    const res = await fetch("http://localhost:3000/categorias");
+    const res = await fetch(`${API_URL}/categorias`);
     const data = await res.json();
     setCategorias(data);
   };
@@ -38,8 +40,8 @@ export default function ProductosPage() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     const url = modoEditar
-      ? `http://localhost:3000/productos/${form.id_producto}`
-      : "http://localhost:3000/productos";
+      ? `${API_URL}/productos/${form.id_producto}`
+      : `${API_URL}/productos`;
     const method = modoEditar ? "PUT" : "POST";
 
     await fetch(url, {
@@ -87,7 +89,7 @@ export default function ProductosPage() {
   // --- Eliminar producto ---
   const handleDelete = async (id) => {
     if (!confirm("¿Seguro que deseas eliminar este producto?")) return;
-    await fetch(`http://localhost:3000/productos/${id}`, { method: "DELETE" });
+    await fetch(`${API_URL}/productos/${id}`, { method: "DELETE" });
     fetchProductos();
   };
 

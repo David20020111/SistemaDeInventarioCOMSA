@@ -11,10 +11,12 @@ export default function RegisterPage() {
     const [error, setError] = useState("");
     const router = useRouter();
 
+    const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://inventariocomsa.onrender.com";
+
     useEffect(() => {
       const fetchRoles = async () => {
         try {
-          const res = await fetch("http://localhost:3000/roles");
+          const res = await fetch(`${API_URL}/roles`);
           const data = await res.json();
           setRoles(data);
         } catch (err) {
@@ -35,7 +37,7 @@ export default function RegisterPage() {
       }
 
       try {
-        const res = await fetch("http://localhost:3000/register", {
+        const res = await fetch(`${API_URL}/register`, {
           method: "POST",
           headers: {"Content-Type": "application/json"},
           body: JSON.stringify({ nombre, correo, contraseña, id_rol: idRol }),

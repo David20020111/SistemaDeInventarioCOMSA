@@ -7,9 +7,11 @@ export default function RolesPage() {
   const [roles, setRoles] = useState([]);
   const [nuevoRol, setNuevoRol] = useState("");
 
+  const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://inventariocomsa.onrender.com";
+
   // 📌 Obtener roles
   const fetchRoles = async () => {
-    const res = await fetch("http://localhost:3000/roles");
+    const res = await fetch(`${API_URL}/roles`);
     const data = await res.json();
     setRoles(data);
   };
@@ -17,7 +19,7 @@ export default function RolesPage() {
   // 📌 Crear rol
   const crearRol = async () => {
     if (!nuevoRol.trim()) return alert("Ingresa un nombre para el rol");
-    await fetch("http://localhost:3000/roles", {
+    await fetch(`${API_URL}/roles`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ nombre_rol: nuevoRol }),
@@ -29,7 +31,7 @@ export default function RolesPage() {
   // 📌 Eliminar rol
   const eliminarRol = async (id) => {
     if (!confirm("¿Seguro que deseas eliminar este rol?")) return;
-    await fetch(`http://localhost:3000/roles/${id}`, {
+    await fetch(`${API_URL}/roles/${id}`, {
       method: "DELETE",
     });
     fetchRoles();

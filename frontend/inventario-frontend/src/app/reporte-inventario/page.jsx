@@ -14,6 +14,8 @@ export default function ReporteInventarioPage() {
   });
   const router = useRouter();
 
+  const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://inventariocomsa.onrender.com";
+
   useEffect(() => {
     fetchDatos();
   }, []);
@@ -31,7 +33,7 @@ export default function ReporteInventarioPage() {
 
     try {
       const res = await fetch(
-        `http://localhost:3000/reportes/inventario?${query}`,
+        `${API_URL}/reportes/inventario?${query}`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
       const data = await res.json();
@@ -45,7 +47,7 @@ export default function ReporteInventarioPage() {
 
   async function fetchCategorias() {
     try {
-      const res = await fetch("http://localhost:3000/categorias");
+      const res = await fetch(`${API_URL}/categorias`);
       const data = await res.json();
       setCategorias(data);
     } catch (err) {
@@ -55,7 +57,7 @@ export default function ReporteInventarioPage() {
 
   async function fetchNombres() {
     try {
-      const res = await fetch("http://localhost:3000/productos");
+      const res = await fetch(`${API_URL}/productos`);
       const data = await res.json();
       setNombres(data);
     } catch (err) {

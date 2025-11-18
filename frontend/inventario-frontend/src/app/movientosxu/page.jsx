@@ -6,12 +6,14 @@ export default function ReporteMovimientosPage() {
   const [reporte, setReporte] = useState([]);
   const [mensaje, setMensaje] = useState("");
 
+  const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://inventariocomsa.onrender.com";
+
   const obtenerReporte = async (e) => {
     e.preventDefault();
     const token = localStorage.getItem("token");
 
     try {
-      const res = await fetch(`http://localhost:3000/movimientos/reporte/${idProducto}`, {
+      const res = await fetch(`${API_URL}/movimientos/reporte/${idProducto}`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },

@@ -7,6 +7,8 @@ export default function DashboardPage() {
     const router = useRouter();
     const [stats, setStats] = useState(null);
 
+    const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://inventariocomsa.onrender.com";
+
     useEffect(() => {
         const token = localStorage.getItem("token");
         if (!token) {
@@ -18,7 +20,7 @@ export default function DashboardPage() {
 
     const fetchData = async () => {
         try {
-            const res = await fetch("http://localhost:3000/dashboard/stats");
+            const res = await fetch(`${API_URL}/dashboard/stats`);
             const data = await res.json();
             setStats(data);
         } catch (error) {

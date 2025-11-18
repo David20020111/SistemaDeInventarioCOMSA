@@ -10,6 +10,8 @@ export default function InventarioBajoPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
+  const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://inventariocomsa.onrender.com";
+
   useEffect (() => {
     const token = localStorage.getItem("token");
     if (!token) {
@@ -24,7 +26,7 @@ export default function InventarioBajoPage() {
     setError("");
     try {
       const token = localStorage.getItem("token"); 
-      const res = await fetch("http://localhost:3000/inventario/bajo", {
+      const res = await fetch(`${API_URL}/inventario/bajo`, {
         headers: { Authorization: `Bearer ${token}` },
       });
 

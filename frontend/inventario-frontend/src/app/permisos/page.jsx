@@ -10,6 +10,8 @@ export default function PermisosPage() {
   const [loading, setLoading] = useState(false);
   const router = useRouter();
 
+  const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://inventariocomsa.onrender.com";
+
   useEffect(() => {
     fetchRoles();
     fetchPermisos();
@@ -17,7 +19,7 @@ export default function PermisosPage() {
 
   async function fetchRoles() {
     try {
-      const res = await fetch("http://localhost:3000/roles");
+      const res = await fetch(`${API_URL}/roles`);
       const data = await res.json();
       setRoles(data);
     } catch (err) {
@@ -27,7 +29,7 @@ export default function PermisosPage() {
 
   async function fetchPermisos() {
     try {
-      const res = await fetch("http://localhost:3000/permisos");
+      const res = await fetch(`${API_URL}/permisos`);
       const data = await res.json();
       setPermisos(data);
     } catch (err) {
@@ -43,7 +45,7 @@ export default function PermisosPage() {
     }
     setLoading(true);
     try {
-      const res = await fetch(`http://localhost:3000/permisos/rol/${id_rol}`);
+      const res = await fetch(`${API_URL}/permisos/rol/${id_rol}`);
       const data = await res.json();
       // transformar a mapa para accesos rápidos
       const map = {};
@@ -91,7 +93,7 @@ export default function PermisosPage() {
       const entries = Object.values(permisosRol);
       // filtrar para solo permisos presentes en la tabla 'Permisos' (por si hay mismatch)
       const promises = entries.map((p) =>
-        fetch("http://localhost:3000/permisos/asignar", {
+        fetch(`${API_URL}/permisos/asignar`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({

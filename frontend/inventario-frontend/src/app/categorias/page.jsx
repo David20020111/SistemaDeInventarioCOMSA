@@ -1,12 +1,7 @@
 "use client";
 import { useState, useEffect } from "react";
 
-const COLORS = {
-  primary: "#4e4444ff",
-  secondary: "#F5A623",
-  background: "#000000ff",
-  text: "#FFFFFF"
-}
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://inventariocomsa.onrender.com";
 
 export default function CategoriasPage() {
   const [categorias, setCategorias] = useState([]);
@@ -17,16 +12,17 @@ export default function CategoriasPage() {
   useEffect(() => { fetchCategorias(); }, []);
 
   const fetchCategorias = async () => {
-    const res = await fetch("http://localhost:3000/categorias");
+    const res = await fetch(`${API_URL}/categorias`);
     const data = await res.json();
     setCategorias(data);
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    
     const url = modoEditar
-      ? `http://localhost:3000/categorias/${form.id_categoria}`
-      : "http://localhost:3000/categorias";
+      ? `${API_URL}/categorias/${form.id_categoria}`
+      : `${API_URL}/categorias`;
     const method = modoEditar ? "PUT" : "POST";
 
     await fetch(url, {
@@ -48,7 +44,7 @@ export default function CategoriasPage() {
 
   const handleDelete = async (id) => {
     if (!confirm("¿Seguro que deseas eliminar esta categoría?")) return;
-    await fetch(`http://localhost:3000/categorias/${id}`, { method: "DELETE" });
+    await fetch(`${API_URL}/categorias/${id}`, { method: "DELETE" });
     fetchCategorias();
   };
 
