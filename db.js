@@ -1,7 +1,7 @@
 const mysql = require('mysql2');
 require('dotenv').config();
 
-const db = mysql.createPool({
+const db = mysql.createConnection({
     host: process.env.DB_HOST || 'metro.proxy.rlwy.net', 
     port: process.env.DB_PORT || '35505',
     user: process.env.DB_USER || 'root',
