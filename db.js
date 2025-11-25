@@ -10,12 +10,6 @@ const db = mysql.createPool({
     multipleStatements: true
 });
 
-db.connect((err) => {
-    if (err) {
-        console.error('❌ Error de conexión a MySQL:', err);
-    } else {
-        console.log('✅ Conectado a MySQL:', process.env.DB_NAME || 'inventario_empresa_comsa2');
-    }
-});
+
 
 module.exports = db;
