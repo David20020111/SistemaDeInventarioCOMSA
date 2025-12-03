@@ -9,7 +9,7 @@ export default function MovimientosPage() {
   const [form, setForm] = useState({
     id_producto: "",
     tipo: "entrada",
-    cantidad: 0,
+    cantidad: "",
     detalle: "",
     id_usuario: 1, // 👈 de momento quemado, luego se toma del login
   });
@@ -105,7 +105,7 @@ export default function MovimientosPage() {
       setForm({
         id_producto: "",
         tipo: "entrada",
-        cantidad: 0,
+        cantidad: "",
         detalle: "",
         id_usuario: 1,
       });
