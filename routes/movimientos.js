@@ -24,8 +24,8 @@ router.post("/", (req, res) => {
       // 2. Actualizar stock del producto
       const updateQuery =
         tipo === "entrada"
-          ? "UPDATE Productos SET stock_actual = stock_actual + ? WHERE id_producto = ?"
-          : "UPDATE Productos SET stock_actual = stock_actual - ? WHERE id_producto = ?";
+          ? "UPDATE productos SET stock_actual = stock_actual + ? WHERE id_producto = ?"
+          : "UPDATE productos SET stock_actual = stock_actual - ? WHERE id_producto = ?";
 
       db.query(updateQuery, [cantidad, id_producto], (err2) => {
         if (err2) {
