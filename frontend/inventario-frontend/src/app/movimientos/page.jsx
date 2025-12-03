@@ -9,7 +9,7 @@ export default function MovimientosPage() {
   const [form, setForm] = useState({
     id_producto: "",
     tipo: "entrada",
-    cantidad: "",
+    cantidad: 0,
     detalle: "",
     id_usuario: 1, // 👈 de momento quemado, luego se toma del login
   });
@@ -70,35 +70,51 @@ export default function MovimientosPage() {
   async function handleSubmit(e) {
     e.preventDefault();
     setError("");
+    setAlerta(null);
 
-    if (!form.id_producto || !form.cantidad) {
+      if (!form.id_producto || !form.cantidad) {
       return setError("Debe seleccionar un producto y una cantidad");
     }
+
+    const cantidadNum = Number(form.cantidad);
+    if (isNaN(cantidadNum) || cantidadNum <= 0) {
+      return setError("La cantidad debe ser un número válido");
+    }
+
+    const body = {
+      ...form,
+      tipo: form.tipo.toLowerCase(),
+      cantidad: cantidadNum,
+    };
 
     try {
       const res = await fetch(`${API_URL}/movimientos`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form),
+        body: JSON.stringify(body),
       });
 
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Error al registrar movimiento");
-
+      
+      if (!res.ok) {
+        return setError(data.error || "Error inesperado")
+      }
+      
       setAlerta("Movimiento registrado correctamente");
 
       setForm({
         id_producto: "",
         tipo: "entrada",
-        cantidad: "",
+        cantidad: 0,
         detalle: "",
         id_usuario: 1,
       });
+      
       fetchMovimientos();
-
-      setTimeout(() => setAlerta(null), 2500);
+      fetchProductos();
     } catch (err) {
-      setError(err.message);
+      console.error("Error al enviar movimiento: ", err)
+      setError("Error al conectar con el servidor")
     }
   }
 
