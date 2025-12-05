@@ -33,6 +33,7 @@ export default function MovimientosPage() {
     try {
       let url = `${API_URL}/movimientos?`;
       if (filtroProducto) url += `producto=${filtroProducto}&`;
+      if (filtroTipo) url += `tipo=${filtroTipo}&`
       if (fechaInicio && fechaFin)
         url += `fechaInicio=${fechaInicio}&fechaFin=${fechaFin}`;
 
