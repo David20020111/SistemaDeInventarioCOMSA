@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 export default function MovimientosPage() {
   const [movimientos, setMovimientos] = useState([]);
   const [productos, setProductos] = useState([]);
-  const [usuarios, setUsuarios] = useState([]);
+  const [roles, setRoles] = useState([]);
   const [form, setForm] = useState({
     id_producto: "",
     tipo: "entrada",
@@ -17,25 +17,22 @@ export default function MovimientosPage() {
   const [alerta, setAlerta] = useState(null);
 
   const [filtroProducto, setFiltroProducto] = useState("");
-  const [filtroUsuario, setFiltroUsuario] = useState("");
+  const [filtroTipo, setFiltroTipo] = useState("");
   const [fechaInicio, setFechaInicio] = useState("");
   const [fechaFin, setFechaFin] = useState(""); 
 
   const router = useRouter();
-
   const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://inventariocomsa.onrender.com";
 
   useEffect(() => {
     fetchMovimientos();
     fetchProductos();
-    fetchUsuarios();
   }, []);
 
   async function fetchMovimientos() {
     try {
       let url = `${API_URL}/movimientos?`;
       if (filtroProducto) url += `producto=${filtroProducto}&`;
-      if (filtroUsuario) url += `usuario=${filtroUsuario}&`;
       if (fechaInicio && fechaFin)
         url += `fechaInicio=${fechaInicio}&fechaFin=${fechaFin}`;
 
@@ -52,16 +49,6 @@ export default function MovimientosPage() {
       const res = await fetch(`${API_URL}/productos`);
       const data = await res.json();
       setProductos(data);
-    } catch (err) {
-      console.error(err);
-    }
-  }
-
-  async function fetchUsuarios() {
-    try {
-      const res = await fetch(`${API_URL}/usuarios`);
-      const data = await res.json();
-      setUsuarios(data);
     } catch (err) {
       console.error(err);
     }
@@ -121,7 +108,7 @@ export default function MovimientosPage() {
   // 🔄 Reset de filtros
   function resetFiltros() {
     setFiltroProducto("");
-    setFiltroUsuario("");
+    setFiltroTipo("");
     setFechaInicio("");
     setFechaFin("");
     fetchMovimientos();
@@ -249,15 +236,12 @@ export default function MovimientosPage() {
 
           <select
             className="border border-gray-600 bg-gray-800 text-white p-2 rounded"
-            value={filtroUsuario}
-            onChange={(e) => setFiltroUsuario(e.target.value)}
+            value={filtroTipo}
+            onChange={(e) => setFiltroTipo(e.target.value)}
           >
-            <option value="">-- Usuario --</option>
-            {usuarios.map((u) => (
-              <option key={u.id_usuario} value={u.nombre}>
-                {u.nombre}
-              </option>
-            ))}
+            <option value="">-- Tipo --</option>
+            <option value="entrada">Entrada</option>
+            <option value="salida">Salida</option>
           </select>
 
           <input

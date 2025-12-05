@@ -40,7 +40,7 @@ router.post("/", (req, res) => {
 
 // Listar movimientos con detalle y usuario
 router.get("/", (req, res) => {
-  const { producto, usuario, fechaInicio, fechaFin } = req.query;
+  const { producto, fechaInicio, fechaFin, tipo } = req.query;
 
   let sql = `
     SELECT m.id_movimiento, p.nombre AS producto, m.tipo, m.cantidad, m.detalle,
@@ -57,9 +57,9 @@ router.get("/", (req, res) => {
     params.push(`%${producto}%`);
   }
 
-  if (usuario) {
-    sql += " AND u.nombre LIKE ?";
-    params.push(`%${usuario}%`);
+  if (tipo) {
+    sql += " AND m.tipo = ?";
+    params.push(tipo);
   }
 
   if (fechaInicio && fechaFin) {
